@@ -91,7 +91,7 @@ app.get("/api/eorbit/cursos", async (req, res) => {
 
 app.post("/api/eorbit/matricula", async (req, res) => {
   try {
-    console.log("[MATRICULA] body recebido do cliente:", req.body);
+    console.log("[MATRICULA] body recebido:", req.body);
 
     const token = await getToken();
 
@@ -103,27 +103,28 @@ app.post("/api/eorbit/matricula", async (req, res) => {
       }
     }
 
-    const finalUrl = `${BASE_URL}/aluno.php?${params.toString()}`;
-    console.log("[MATRICULA] URL final:", finalUrl);
+    console.log("[MATRICULA] body enviado:", params.toString());
 
-    const response = await fetch(finalUrl, {
+    const response = await fetch(`${BASE_URL}/aluno.php`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: params.toString()
     });
 
     const raw = await response.text();
 
     console.log("[MATRICULA] status:", response.status);
-    console.log("[MATRICULA] body retornado:", raw);
+    console.log("[MATRICULA] resposta:", raw);
 
     return res.status(response.status).send(raw);
+
   } catch (error) {
     console.error("[MATRICULA] erro:", error);
     return res.status(500).json({
       ok: false,
-      stage: "matricula",
       error: error.message
     });
   }
