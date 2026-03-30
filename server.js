@@ -91,17 +91,22 @@ app.get("/api/eorbit/cursos", async (req, res) => {
 
 app.post("/api/eorbit/matricula", async (req, res) => {
   try {
+    console.log("[MATRICULA] body recebido do cliente:", req.body);
+
     const token = await getToken();
 
     const params = new URLSearchParams();
 
-    for (const [key, value] of Object.entries(req.body)) {
+    for (const [key, value] of Object.entries(req.body || {})) {
       if (value !== undefined && value !== null && String(value).trim() !== "") {
         params.append(key, String(value).trim());
       }
     }
 
-    const response = await fetch(`${BASE_URL}/aluno.php?${params.toString()}`, {
+    const finalUrl = `${BASE_URL}/aluno.php?${params.toString()}`;
+    console.log("[MATRICULA] URL final:", finalUrl);
+
+    const response = await fetch(finalUrl, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`
@@ -111,10 +116,11 @@ app.post("/api/eorbit/matricula", async (req, res) => {
     const raw = await response.text();
 
     console.log("[MATRICULA] status:", response.status);
-    console.log("[MATRICULA] body:", raw);
+    console.log("[MATRICULA] body retornado:", raw);
 
     return res.status(response.status).send(raw);
   } catch (error) {
+    console.error("[MATRICULA] erro:", error);
     return res.status(500).json({
       ok: false,
       stage: "matricula",
