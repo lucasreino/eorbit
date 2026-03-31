@@ -119,13 +119,35 @@ app.post("/api/eorbit/matricula", async (req, res) => {
     console.log("[MATRICULA] status:", response.status);
     console.log("[MATRICULA] resposta:", raw);
 
-    return res.status(response.status).send(raw);
+    const paymentLinkMatch = raw.match(/https?:\/\/[^\s"'<>]+/i);
+    const paymentLink = paymentLinkMatch ? paymentLinkMatch[0] : null;
+
+    const success =
+      raw.includes("Matrícula concluída com sucesso") ||
+      raw.includes("Matrícula efetuada com sucesso") ||
+      raw.includes("Matrícula efetuada com secesso");
+
+    if (success) {
+      return res.status(200).json({
+        success: true,
+        message: "Matrícula concluída com sucesso",
+        paymentLink,
+        raw
+      });
+    }
+
+    return res.status(response.status).json({
+      success: false,
+      message: raw,
+      paymentLink,
+      raw
+    });
 
   } catch (error) {
     console.error("[MATRICULA] erro:", error);
     return res.status(500).json({
-      ok: false,
-      error: error.message
+      success: false,
+      message: error.message
     });
   }
 });
